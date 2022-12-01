@@ -6,3 +6,5 @@
 serviceAccountKey.json
 userdatabase.ser
 /.vscode
+/assets
+*.log
