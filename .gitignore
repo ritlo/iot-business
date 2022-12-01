@@ -3,3 +3,6 @@
 /.gradle/
 /build/
 /pi4j-example-minimal.iml
+serviceAccountKey.json
+userdatabase.ser
+/.vscode

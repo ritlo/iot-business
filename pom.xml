@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.pi4j</groupId>
-    <artifactId>pi4j-example-minimal</artifactId>
-    <name>Pi4J :: MINIMAL EXAMPLE :: Sample minimal project</name>
-    <description>Pi4J Sample Code</description>
+    <groupId>com.javaproject</groupId>
+    <artifactId>customerengagementdatabase</artifactId>
+    <name>Customer engagement database 2k19ec150</name>
+    <description>java project</description>
     <version>0.0.1</version>
 
     <!-- BUILD PROPERTIES -->
@@ -46,6 +44,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>8.1.0</version>
+          </dependency>
+          
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
@@ -72,6 +76,11 @@
         <dependency>
             <groupId>com.pi4j</groupId>
             <artifactId>pi4j-plugin-pigpio</artifactId>
+            <version>${pi4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-plugin-linuxfs</artifactId>
             <version>${pi4j.version}</version>
         </dependency>
     </dependencies>
@@ -105,12 +114,7 @@
                 </executions>
                 <configuration>
                     <executable>java</executable>
-                    <arguments>
-                        <argument>--module-path</argument>
-                        <argument>${project.build.directory}/distribution</argument>
-                        <argument>--module</argument>
-                        <argument>com.pi4j.example/com.pi4j.example.MinimalExample</argument>
-                    </arguments>
+                    <mainClass>com.javaproject.Main</mainClass>
                 </configuration>
             </plugin>
 
@@ -121,7 +125,16 @@
                 <version>3.1.2</version>
                 <configuration>
                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>com.javaproject.Main</mainClass>
+                        </manifest>
+                    </archive>
+
                 </configuration>
+
             </plugin>
 
             <!-- COPY ANY RUNTIME SCRIPTS TO THE /target/distribution PATH  -->
@@ -135,9 +148,9 @@
                         <configuration>
                             <target>
                                 <copy todir="${project.build.directory}/distribution" overwrite="true" flatten="true">
-                                    <fileset dir="assets" includes="*.sh" ></fileset>
+                                    <fileset dir="assets" includes="*.sh"></fileset>
                                 </copy>
-                                <chmod dir="${project.build.directory}/distribution" perm="ugo+rx" includes="**/*.sh"/>
+                                <chmod dir="${project.build.directory}/distribution" perm="ugo+rx" includes="**/*.sh" />
                             </target>
                         </configuration>
                         <goals>
