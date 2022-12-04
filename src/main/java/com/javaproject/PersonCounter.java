@@ -20,7 +20,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 public class PersonCounter extends Thread {
-    static int SENSOR_PIN = 15;
+    static int MOTION_SENSOR_PIN = 15;
+    static int FIRE_SENSOR_PIN = 18;
     int currentPersonCount;
     User u;
 
@@ -32,7 +33,7 @@ public class PersonCounter extends Thread {
     LocalDate currentDate = LocalDate.now();
     LocalTime currentTime = LocalTime.now();
     LocalTime openingTime = LocalTime.parse("12:00");
-    LocalTime closingTime = LocalTime.parse("13:00");
+    LocalTime closingTime = LocalTime.parse("20:00");
 
     void initialiseFirebase() throws IOException {
         FileInputStream serviceAccount = new FileInputStream(
@@ -48,16 +49,48 @@ public class PersonCounter extends Thread {
         FirebaseApp.initializeApp(options);
     }
 
-    void sendMessage() throws FirebaseMessagingException {
-        
-        String title = "Person Detected at time " + LocalTime.now();
-        Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
-                .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
-                .build();
+    void sendMotionMessage() throws FirebaseMessagingException {
+        String time = LocalTime.now().toString();
+        String title = "Person Detected at time " + time;
+        // Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
+        //         .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
+        //         .build();
+        AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
+        Message message = Message.builder()
+        .putData("title",title)
+        .putData("time",time)
+        .setTopic("Firetest")
+        .setAndroidConfig(config)
+        .build();
+
+
 
         String response = FirebaseMessaging.getInstance().send(message);
 
         System.out.println("Person Detected, Alert Sent");
+    }
+
+    //TODO void sendFireMessage()
+    void sendFireMessage() throws FirebaseMessagingException {
+        String time = LocalTime.now().toString();
+        String title = "Fire Detected at time " + time;
+        // Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
+        //         .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
+        //         .build();
+        AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
+        Message message = Message.builder()
+        .putData("title",title)
+        .putData("time",time)
+        .setTopic("Firetest")
+        .setAndroidConfig(config)
+        .build();
+
+
+
+        String response = FirebaseMessaging.getInstance().send(message);
+
+        System.out.println("Fire Alarm Sent");
+
     }
 
     public void run() {
@@ -72,11 +105,12 @@ public class PersonCounter extends Thread {
 
         var pi4j = Pi4J.newAutoContext();
 
-        var config = DigitalInput.newConfigBuilder(pi4j).address(SENSOR_PIN).pull(PullResistance.PULL_DOWN).build();
-
+        var motionConfig = DigitalInput.newConfigBuilder(pi4j).address(MOTION_SENSOR_PIN).pull(PullResistance.PULL_DOWN).build();
+        var fireConfig = DigitalInput.newConfigBuilder(pi4j).address(FIRE_SENSOR_PIN).pull(PullResistance.PULL_DOWN).build();
         DigitalInputProvider digitalInputProvider = pi4j.provider("pigpio-digital-input");
 
-        var input = digitalInputProvider.create(config);
+        var motioninput = digitalInputProvider.create(motionConfig);
+        var fireinput = digitalInputProvider.create(fireConfig);
         try {
             currentPersonCount = u.PersonCount.get(date);
         } catch (NullPointerException e2) {
@@ -85,7 +119,7 @@ public class PersonCounter extends Thread {
 
         System.out.println("Running");
 
-        input.addListener(e -> {
+        motioninput.addListener(e -> {
 
             if (e.state() == DigitalState.HIGH) {
                 // Night test
@@ -96,7 +130,7 @@ public class PersonCounter extends Thread {
 
                 // } else {
                 //     try {
-                //         sendMessage();
+                //         sendMotionMessage();
                 //     } catch (FirebaseMessagingException e1) {
                 //         // TODO Auto-generated catch block
                 //         e1.printStackTrace();
@@ -109,7 +143,7 @@ public class PersonCounter extends Thread {
 
                 } else {
                     try {
-                        sendMessage();
+                        sendMotionMessage();
                     } catch (FirebaseMessagingException e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
@@ -120,18 +154,47 @@ public class PersonCounter extends Thread {
             }
         });
 
+
+        fireinput.addListener(e -> {
+
+            if (e.state() == DigitalState.HIGH) {
+                // Night test
+                // if (!(LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime))) {
+                //     currentPersonCount++;
+                //     u.PersonCount.put(date, currentPersonCount);
+                //     System.out.println("Person detected " + currentPersonCount + "th time");
+
+                // } else {
+                //     try {
+                //         sendMotionMessage();
+                //     } catch (FirebaseMessagingException e1) {
+                //         // TODO Auto-generated catch block
+                //         e1.printStackTrace();
+                //     }
+                // }
+                try {
+                        sendFireMessage();
+                    } catch (FirebaseMessagingException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+                
+
+            });
+
         while (!interrupted()) {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e1) {
                 // TODO Auto-generated catch block
-                System.out.println("Person Counter Stopping");
+                System.out.println("IOT System Stopping");
                 
             }
         }
         pi4j.shutdown();
-        System.out.println("Person Counter Stopped");
+        System.out.println("IOT Embedded System Stopped");
 
     }
-
 }
+
