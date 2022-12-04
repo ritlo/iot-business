@@ -51,14 +51,18 @@ public class PersonCounter extends Thread {
 
     void sendMotionMessage() throws FirebaseMessagingException {
         String time = LocalTime.now().toString();
-        String title = "Person Detected at time " + time;
+        String date = LocalDate.now().toString();
+        String desc = "Person Detected at time " + time;
         // Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
         //         .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
         //         .build();
         AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
         Message message = Message.builder()
-        .putData("title",title)
+        .putData("event","Burglar")
+        .putData("title","Possible Burglar Detected")
+        .putData("desc",desc)
         .putData("time",time)
+        .putData("date",date)
         .setTopic("Firetest")
         .setAndroidConfig(config)
         .build();
@@ -73,14 +77,18 @@ public class PersonCounter extends Thread {
     //TODO void sendFireMessage()
     void sendFireMessage() throws FirebaseMessagingException {
         String time = LocalTime.now().toString();
-        String title = "Fire Detected at time " + time;
+        String date = LocalDate.now().toString();
+        String desc = "Fire Detected at time " + time;
         // Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
         //         .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
         //         .build();
         AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
         Message message = Message.builder()
-        .putData("title",title)
+        .putData("event","Fire")
+        .putData("title","Fire Detected")
+        .putData("desc",desc)
         .putData("time",time)
+        .putData("date",date)
         .setTopic("Firetest")
         .setAndroidConfig(config)
         .build();
