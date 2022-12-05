@@ -147,6 +147,7 @@ public class IoTEmbeddedSystem extends Thread {
                     currentPersonCount++;
                     u.PersonCount.put(date, currentPersonCount);
                     System.out.println("Person detected " + currentPersonCount + "th time");
+                    updateApp(Integer.toString(currentPersonCount));
 
                 } else {
                     try {
@@ -202,6 +203,15 @@ public class IoTEmbeddedSystem extends Thread {
         pi4j.shutdown();
         System.out.println("IOT Embedded System Stopped");
 
+    }
+
+    private void updateApp(String p) {
+        AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
+        Message message = Message.builder()
+        .putData("personCount", p)
+        .setTopic("Firetest")
+        .setAndroidConfig(config)
+        .build();
     }
 }
 
