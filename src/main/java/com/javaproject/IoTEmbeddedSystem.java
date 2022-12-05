@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
-public class PersonCounter extends Thread {
+public class IoTEmbeddedSystem extends Thread {
     static int MOTION_SENSOR_PIN = 15;
     static int FIRE_SENSOR_PIN = 18;
     int currentPersonCount;
     User u;
 
-    PersonCounter(User u) {
+    IoTEmbeddedSystem(User u) {
         this.u = u;
     }
 
@@ -74,7 +74,6 @@ public class PersonCounter extends Thread {
         System.out.println("Person Detected, Alert Sent");
     }
 
-    //TODO void sendFireMessage()
     void sendFireMessage() throws FirebaseMessagingException {
         String time = LocalTime.now().toString();
         String date = LocalDate.now().toString();

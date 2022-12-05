@@ -126,7 +126,7 @@ public class UserDatabase implements java.io.Serializable {
     }
 
     void databaseRestaurant(User U) {
-        PersonCounter pc = new PersonCounter(U);
+        IoTEmbeddedSystem pc = new IoTEmbeddedSystem(U);
         pc.start();
         while (runloggedin) {
             System.out.println("Enter option");
