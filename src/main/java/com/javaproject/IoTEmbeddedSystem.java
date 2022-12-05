@@ -53,21 +53,20 @@ public class IoTEmbeddedSystem extends Thread {
         String time = LocalTime.now().toString();
         String date = LocalDate.now().toString();
         String desc = "Person Detected at time " + time;
-        // Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
-        //         .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
-        //         .build();
+        // Message message =
+        // Message.builder().setNotification(Notification.builder().setTitle(title).build())
+        // .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
+        // .build();
         AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
         Message message = Message.builder()
-        .putData("event","Burglar")
-        .putData("title","Possible Burglar Detected")
-        .putData("desc",desc)
-        .putData("time",time)
-        .putData("date",date)
-        .setTopic("Firetest")
-        .setAndroidConfig(config)
-        .build();
-
-
+                .putData("event", "Burglar")
+                .putData("title", "Possible Burglar Detected")
+                .putData("desc", desc)
+                .putData("time", time)
+                .putData("date", date)
+                .setTopic("Firetest")
+                .setAndroidConfig(config)
+                .build();
 
         String response = FirebaseMessaging.getInstance().send(message);
 
@@ -78,21 +77,20 @@ public class IoTEmbeddedSystem extends Thread {
         String time = LocalTime.now().toString();
         String date = LocalDate.now().toString();
         String desc = "Fire Detected at time " + time;
-        // Message message = Message.builder().setNotification(Notification.builder().setTitle(title).build())
-        //         .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
-        //         .build();
+        // Message message =
+        // Message.builder().setNotification(Notification.builder().setTitle(title).build())
+        // .setTopic("Firetest").setAndroidConfig(AndroidConfig.builder().setPriority(Priority.HIGH).build())
+        // .build();
         AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
         Message message = Message.builder()
-        .putData("event","Fire")
-        .putData("title","Fire Detected")
-        .putData("desc",desc)
-        .putData("time",time)
-        .putData("date",date)
-        .setTopic("Firetest")
-        .setAndroidConfig(config)
-        .build();
-
-
+                .putData("event", "Fire")
+                .putData("title", "Fire Detected")
+                .putData("desc", desc)
+                .putData("time", time)
+                .putData("date", date)
+                .setTopic("Firetest")
+                .setAndroidConfig(config)
+                .build();
 
         String response = FirebaseMessaging.getInstance().send(message);
 
@@ -112,8 +110,10 @@ public class IoTEmbeddedSystem extends Thread {
 
         var pi4j = Pi4J.newAutoContext();
 
-        var motionConfig = DigitalInput.newConfigBuilder(pi4j).address(MOTION_SENSOR_PIN).pull(PullResistance.PULL_DOWN).build();
-        var fireConfig = DigitalInput.newConfigBuilder(pi4j).address(FIRE_SENSOR_PIN).pull(PullResistance.PULL_DOWN).build();
+        var motionConfig = DigitalInput.newConfigBuilder(pi4j).address(MOTION_SENSOR_PIN).pull(PullResistance.PULL_DOWN)
+                .build();
+        var fireConfig = DigitalInput.newConfigBuilder(pi4j).address(FIRE_SENSOR_PIN).pull(PullResistance.PULL_DOWN)
+                .build();
         DigitalInputProvider digitalInputProvider = pi4j.provider("pigpio-digital-input");
 
         var motioninput = digitalInputProvider.create(motionConfig);
@@ -130,24 +130,30 @@ public class IoTEmbeddedSystem extends Thread {
 
             if (e.state() == DigitalState.HIGH) {
                 // Night test
-                // if (!(LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime))) {
-                //     currentPersonCount++;
-                //     u.PersonCount.put(date, currentPersonCount);
-                //     System.out.println("Person detected " + currentPersonCount + "th time");
+                // if (!(LocalTime.now().isAfter(openingTime) &&
+                // LocalTime.now().isBefore(closingTime))) {
+                // currentPersonCount++;
+                // u.PersonCount.put(date, currentPersonCount);
+                // System.out.println("Person detected " + currentPersonCount + "th time");
 
                 // } else {
-                //     try {
-                //         sendMotionMessage();
-                //     } catch (FirebaseMessagingException e1) {
-                //         // TODO Auto-generated catch block
-                //         e1.printStackTrace();
-                //     }
+                // try {
+                // sendMotionMessage();
+                // } catch (FirebaseMessagingException e1) {
+                // // TODO Auto-generated catch block
+                // e1.printStackTrace();
+                // }
                 // }
                 if (LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime)) {
                     currentPersonCount++;
                     u.PersonCount.put(date, currentPersonCount);
                     System.out.println("Person detected " + currentPersonCount + "th time");
-                    updateApp(Integer.toString(currentPersonCount));
+                    try {
+                        updateApp(Integer.toString(currentPersonCount));
+                    } catch (FirebaseMessagingException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
 
                 } else {
                     try {
@@ -157,39 +163,37 @@ public class IoTEmbeddedSystem extends Thread {
                         e1.printStackTrace();
                     }
                 }
-                
 
             }
         });
-
 
         fireinput.addListener(e -> {
 
             if (e.state() == DigitalState.HIGH) {
                 // Night test
-                // if (!(LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime))) {
-                //     currentPersonCount++;
-                //     u.PersonCount.put(date, currentPersonCount);
-                //     System.out.println("Person detected " + currentPersonCount + "th time");
+                // if (!(LocalTime.now().isAfter(openingTime) &&
+                // LocalTime.now().isBefore(closingTime))) {
+                // currentPersonCount++;
+                // u.PersonCount.put(date, currentPersonCount);
+                // System.out.println("Person detected " + currentPersonCount + "th time");
 
                 // } else {
-                //     try {
-                //         sendMotionMessage();
-                //     } catch (FirebaseMessagingException e1) {
-                //         // TODO Auto-generated catch block
-                //         e1.printStackTrace();
-                //     }
+                // try {
+                // sendMotionMessage();
+                // } catch (FirebaseMessagingException e1) {
+                // // TODO Auto-generated catch block
+                // e1.printStackTrace();
+                // }
                 // }
                 try {
-                        sendFireMessage();
-                    } catch (FirebaseMessagingException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
+                    sendFireMessage();
+                } catch (FirebaseMessagingException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
                 }
-                
+            }
 
-            });
+        });
 
         while (!interrupted()) {
             try {
@@ -197,7 +201,7 @@ public class IoTEmbeddedSystem extends Thread {
             } catch (InterruptedException e1) {
                 // TODO Auto-generated catch block
                 System.out.println("IOT System Stopping");
-                
+
             }
         }
         pi4j.shutdown();
@@ -205,13 +209,13 @@ public class IoTEmbeddedSystem extends Thread {
 
     }
 
-    private void updateApp(String p) {
+    void updateApp(String p) throws FirebaseMessagingException {
         AndroidConfig config = AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
         Message message = Message.builder()
-        .putData("personCount", p)
-        .setTopic("Firetest")
-        .setAndroidConfig(config)
-        .build();
+                .putData("personCount", p)
+                .setTopic("Firetest")
+                .setAndroidConfig(config)
+                .build();
+        String response = FirebaseMessaging.getInstance().send(message);
     }
 }
-
