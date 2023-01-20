@@ -1,0 +1,36 @@
+{
+    "description": "No description provided.", 
+    "license": "other-open", 
+    "title": "ritlo/iot-business: Initial Release for 7th Semester Btech Project Report", 
+    "version": "release", 
+    "upload_type": "software", 
+    "publication_date": "2022-12-08", 
+    "creators": [
+         
+        {
+            "affiliation": "Delhi Technological University", 
+            "name": "Ritvick Lohani"
+        },
+        {
+            "affiliation": "Delhi Technological University", 
+            "name": "Sudeep Saurabh"
+        },
+        {
+            "affiliation": "Delhi Technological University", 
+            "name": "Swapnil Gour"
+        }
+    ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/ritlo/iot-business/tree/release", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.7413829", 
+            "relation": "isVersionOf"
+        }
+    ]
+}
