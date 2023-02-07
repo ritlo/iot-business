@@ -14,9 +14,9 @@ public class User implements Serializable{
     public int authorizationLevel;
     public Map <String, Integer> DailyCount = new HashMap<String, Integer>();
     public Map <String, ArrayList<String>> PersonCount = new HashMap<String, ArrayList<String>>();
-    public List <Hash> hash;
+    public String hash;
     
-    User(String username, List<Hash> hash) {
+    User(String username, String hash) {
         this.username = username;
         this.hash = hash;
     }

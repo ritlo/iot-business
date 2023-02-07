@@ -40,20 +40,25 @@ public class UserDatabase implements java.io.Serializable {
     Console co = System.console();
     Scanner sc = new Scanner(System.in);
     SecureRandom random = new SecureRandom();
+    Map<String,Object> data = new HashMap<String,Object>();
 
     void register() {
         System.out.println("Enter Username: ");
         String user = co.readLine();
         System.out.println("Enter Password: ");
         String password = String.valueOf(co.readPassword());
+        System.out.println("Is User an Admin? (true/false)");
+        boolean admin = sc.nextBoolean();
+  
         Hash hash = Password.hash(password).addRandomSalt().withScrypt();
         DocumentReference docRef = db.collection("Users").document();
         Map<String, Object> data = new HashMap<>();
         data.put("username", user);
         data.put("hashedpassword", hash.toString());
+        data.put("admin", admin);
         ApiFuture<WriteResult> result = db.collection("Users").document().set(data);
         try {
-            System.out.println("New User registered" + result.get().getUpdateTime());
+            System.out.println("New User registered " + result.get().getUpdateTime());
         } catch (ExecutionException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -111,10 +116,11 @@ public class UserDatabase implements java.io.Serializable {
                     for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
                         System.out.println("Enter Password");
                         String loginPassword = sc.nextLine();
-                        String hash = (String) document.getData().get("hashedpassword");
+                        data = document.getData();
+                        String hash = data.get("hashedpassword").toString();
                         boolean verify = Password.check(loginPassword, hash).withScrypt();
                         if(verify){
-
+                            System.out.println("yes");
                         }
                         
 
@@ -254,9 +260,10 @@ public class UserDatabase implements java.io.Serializable {
         // System.out.println("Adding Admin User to Database");
         // users.add(admin);
         // }
+        // register();
         loginscreen();
         // writedatabase();
-        // register();
+
 
     }
 }
