@@ -33,11 +33,11 @@ public class IoTEmbeddedSystem extends Thread {
     LocalDate currentDate = LocalDate.now();
     LocalTime currentTime = LocalTime.now();
     LocalTime openingTime = LocalTime.parse("12:00");
-    LocalTime closingTime = LocalTime.parse("20:00");
+    LocalTime closingTime = LocalTime.parse("21:00");
 
     void initialiseFirebase() throws IOException {
         FileInputStream serviceAccount = new FileInputStream(
-                "/home/pi/Desktop/javaproject/serviceAccountKey.json");
+                "/home/pi/Desktop/javaprojectopenstore/serviceAccountKey.json");
 
         // FirebaseOptions options = new FirebaseOptions.Builder()
         // .setCredentials(GoogleCredentials.fromStream(serviceAccount))
