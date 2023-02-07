@@ -27,6 +27,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firestore.v1.Document;
 import com.google.cloud.firestore.Query;
 import com.password4j.Hash;
 import com.password4j.Password;
@@ -108,9 +109,15 @@ public class UserDatabase implements java.io.Serializable {
             else{
                 try {
                     for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-                        System.out.println(document.getId());
                         System.out.println("Enter Password");
-                        String loginPassword = co.readLine();
+                        String loginPassword = sc.nextLine();
+                        String hash = (String) document.getData().get("hashedpassword");
+                        boolean verify = Password.check(loginPassword, hash).withScrypt();
+                        if(verify){
+
+                        }
+                        
+
 }
                 } catch (InterruptedException | ExecutionException e) {
                     // TODO Auto-generated catch block
