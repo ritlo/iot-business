@@ -9,10 +9,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -43,8 +45,17 @@ public class UserDatabase implements java.io.Serializable {
         DocumentReference docRef = db.collection("Users").document();
         Map<String, Object> data = new HashMap<>();
         data.put("username", user);
-        data.put("hashedpassword", hash);
-        ApiFuture<WriteResult> result = docRef.set(data);
+        data.put("hashedpassword", hash.toString());
+        ApiFuture<WriteResult> result = db.collection("Users").document().set(data);
+        try {
+            System.out.println("New User registered" + result.get().getUpdateTime());
+        } catch (ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     void delete(String username) {

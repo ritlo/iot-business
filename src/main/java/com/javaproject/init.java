@@ -9,10 +9,9 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 
-public class init{
+public class init {
     public static void initialiseFirebase() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream(
-                "/home/pi/Desktop/javaprojectopenstore/serviceAccountKey.json");
+        FileInputStream serviceAccount = new FileInputStream("serviceaccountkey.json");
 
         // FirebaseOptions options = new FirebaseOptions.Builder()
         // .setCredentials(GoogleCredentials.fromStream(serviceAccount))

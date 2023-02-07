@@ -7,15 +7,16 @@ import com.password4j.Hash;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class User implements Serializable{
-    String username;
-    int authorizationLevel;
-    Map <String, Integer> DailyCount = new HashMap<String, Integer>();
-    Map <String, ArrayList<String>> PersonCount = new HashMap<String, ArrayList<String>>();
-    Hash hash;
+    public String username;
+    public int authorizationLevel;
+    public Map <String, Integer> DailyCount = new HashMap<String, Integer>();
+    public Map <String, ArrayList<String>> PersonCount = new HashMap<String, ArrayList<String>>();
+    public List <Hash> hash;
     
-    User(String username, Hash hash) {
+    User(String username, List<Hash> hash) {
         this.username = username;
         this.hash = hash;
     }
