@@ -10,19 +10,19 @@ public class Main {
         // PersonCounter p = new PersonCounter();
         // // p.initialiseSensor();
         init.initialiseFirebase();
-        try {
-            firestoretest.exec();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // try {
+        //     firestoretest.exec();
+        // } catch (InterruptedException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // } catch (ExecutionException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
         
 
-        // UserDatabase userd = new UserDatabase();
-        // userd.userdatabase();
+        UserDatabase userd = new UserDatabase();
+        userd.userdatabase();
 
         
     }

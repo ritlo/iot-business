@@ -14,11 +14,11 @@ public class firestoretest {
         System.out.println("Running firestore test");
         Firestore db = FirestoreClient.getFirestore();
 
-        ApiFuture<QuerySnapshot> query = db.collection("users").get();
+        ApiFuture<QuerySnapshot> query = db.collection("Users").get();
         QuerySnapshot querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();  
         for(QueryDocumentSnapshot document: documents){
-            System.out.println(document);
+            System.out.println(document.getString("username"));
         }     
     }
 }

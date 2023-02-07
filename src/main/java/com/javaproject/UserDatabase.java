@@ -1,32 +1,50 @@
 package com.javaproject;
 
+import java.io.Console;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.cloud.FirestoreClient;
+import com.password4j.Hash;
+import com.password4j.Password;
 
 public class UserDatabase implements java.io.Serializable {
-    Scanner sc = new Scanner(System.in);
     ArrayList<User> users = new ArrayList<User>();
     Boolean runlogin = true;
     Boolean runloggedin = false;
+    Firestore db = FirestoreClient.getFirestore();
+    Console co = System.console();
+    Scanner sc = new Scanner(System.in);
+    SecureRandom random = new SecureRandom();
 
     void register() {
         System.out.println("Enter Username: ");
-        String user = sc.nextLine();
+        String user = co.readLine();
         System.out.println("Enter Password: ");
-        String password = sc.nextLine();
-        System.out.println("Authorization Level");
-        int authorizationLevel = sc.nextInt();
-
-        User u = new User(user, password, authorizationLevel);
-        users.add(u);
-
+        String password = String.valueOf(co.readPassword());
+        Hash hash = Password.hash(password).addRandomSalt().withScrypt();
+        DocumentReference docRef = db.collection("Users").document();
+        Map<String, Object> data = new HashMap<>();
+        data.put("username", user);
+        data.put("hashedpassword", hash);
+        ApiFuture<WriteResult> result = docRef.set(data);
     }
 
     void delete(String username) {
@@ -76,14 +94,14 @@ public class UserDatabase implements java.io.Serializable {
             FileInputStream in = new FileInputStream("userdatabase.ser");
             ObjectInputStream usersread = new ObjectInputStream(in);
 
-        users = (ArrayList<User>) usersread.readObject();
-        in.close();
-        usersread.close();
+            users = (ArrayList<User>) usersread.readObject();
+            in.close();
+            usersread.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             System.out.println("File doesnt exist");
         }
-        
+
     }
 
     void loginscreen() {
@@ -91,9 +109,9 @@ public class UserDatabase implements java.io.Serializable {
         int wrongcount = 0;
         while (runlogin) {
             System.out.println("Enter Username");
-            String loginUser = sc.nextLine();
+            String loginUser = co.readLine();
             System.out.println("Enter Password");
-            String loginPassword = sc.nextLine();
+            String loginPassword = co.readLine();
             Iterator<User> iterator = users.iterator();
             if (loginUser.toLowerCase().contentEquals("q") || loginPassword.toLowerCase().contentEquals("q")) {
                 runlogin = false;
@@ -118,9 +136,10 @@ public class UserDatabase implements java.io.Serializable {
                         runlogin = false;
                         databaseAdmin(currentUser);
                         break;
-                    } 
+                    }
                 }
-                if(runlogin) System.out.println("Try Again");
+                if (runlogin)
+                    System.out.println("Try Again");
             }
         }
     }
@@ -218,20 +237,21 @@ public class UserDatabase implements java.io.Serializable {
     }
 
     public void userdatabase() throws ClassNotFoundException, IOException {
-        readdatabase();
-        User admin = new User("admin", "password", 2);
-        boolean adminExists = false;
-        Iterator <User> it = users.iterator();
-        while(it.hasNext()){
-            User u = it.next();
-            if(u.username.contentEquals("admin")) adminExists = true;
-        }
-        if(!adminExists){
-            System.out.println("Adding Admin User to Database");
-            users.add(admin);
-        }
-        loginscreen();
-        writedatabase();
+        // readdatabase();
+        // User admin = new User("admin", "password", 2);
+        // boolean adminExists = false;
+        // Iterator <User> it = users.iterator();
+        // while(it.hasNext()){
+        // User u = it.next();
+        // if(u.username.contentEquals("admin")) adminExists = true;
+        // }
+        // if(!adminExists){
+        // System.out.println("Adding Admin User to Database");
+        // users.add(admin);
+        // }
+        // loginscreen();
+        // writedatabase();
+        register();
 
     }
 }

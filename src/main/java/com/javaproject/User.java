@@ -9,7 +9,7 @@ public class User implements Serializable{
     String password;
     int authorizationLevel;
     Map <String, Integer> PersonCount = new HashMap<String, Integer>();
-
+    
     User(String username, String password, int authorizationLevel) {
         this.username = username;
         this.password = password;
