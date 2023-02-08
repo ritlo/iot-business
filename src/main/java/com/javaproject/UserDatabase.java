@@ -115,12 +115,19 @@ public class UserDatabase implements java.io.Serializable {
                 try {
                     for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
                         System.out.println("Enter Password");
-                        String loginPassword = sc.nextLine();
+                        String loginPassword = String.valueOf(co.readPassword());
+                        String id = document.getId();
                         data = document.getData();
+                        System.out.println(data);
                         String hash = data.get("hashedpassword").toString();
                         boolean verify = Password.check(loginPassword, hash).withScrypt();
                         if(verify){
-                            System.out.println("yes");
+                            System.out.println("User verified");
+                            System.out.println("Welcome "+data.get("username").toString());
+                            if((boolean)data.get("admin")==true){
+                                // databaseAdmin(DocumentSnapshot document);
+                                System.out.println("User verified");
+                            }
                         }
                         
 
