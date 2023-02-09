@@ -30,6 +30,14 @@ public class User implements Serializable{
         this.PersonCount.put(currentDate.toString(),null);
     }
 
+    User(String username, boolean admin, Map <String,Integer> DailyCount, Map <String, ArrayList<String>> PersonCount) {
+        this.username = username;
+        this.hash = null;
+        this.admin = admin;
+        this.DailyCount.putAll(DailyCount);
+        this.PersonCount.putAll(PersonCount);
+    }
+
     void addcount(String date, int count) {
         this.DailyCount.put(date, count);
     }
