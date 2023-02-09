@@ -166,7 +166,8 @@ public class IoTEmbeddedSystem extends Thread {
                 // e1.printStackTrace();
                 // }
                 // }
-                if (LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime)) {
+                // if (LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime)) {
+                if(true){
                     currentDailyCount++;
                     String time = LocalTime.now().toString();
                     u.DailyCount.put(date, currentDailyCount);
