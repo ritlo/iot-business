@@ -13,15 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-
-
-public class User implements Serializable{
+public class User implements Serializable {
     public String username;
     public boolean admin;
-    public Map <String, Integer> DailyCount = new HashMap<String, Integer>();
-    public Map <String, ArrayList<String>> PersonCount = new HashMap<String, ArrayList<String>>();
+    public Map<String, Integer> DailyCount = new HashMap<String, Integer>();
+    public Map<String, ArrayList<String>> PersonCount = new HashMap<String, ArrayList<String>>();
     public String hash;
-    
+
     User(String username, String hash, boolean admin) {
         this.username = username;
         this.hash = hash;
@@ -29,10 +27,10 @@ public class User implements Serializable{
         DateTimeFormatter currentDateFormatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
         LocalDate currentDate = LocalDate.now();
         this.DailyCount.put(currentDate.toString(), 0);
-        this.PersonCount.put(currentDate.toString(),null);
+        this.PersonCount.put(currentDate.toString(), null);
     }
 
-    User(String username, boolean admin, Map <String,Integer> DailyCount, Map <String, ArrayList<String>> PersonCount) {
+    User(String username, boolean admin, Map<String, Integer> DailyCount, Map<String, ArrayList<String>> PersonCount) {
         this.username = username;
         this.hash = null;
         this.admin = admin;
@@ -43,21 +41,21 @@ public class User implements Serializable{
     void addcount(String date, int count) {
         int existingDailyCount;
         try {
-          existingDailyCount     = this.DailyCount.get(date);
+            existingDailyCount = this.DailyCount.get(date);
         } catch (Exception e) {
             existingDailyCount = 0;
         }
-        
+
         Random random = new Random();
-        this.DailyCount.put(date, count+existingDailyCount);
+        this.DailyCount.put(date, count + existingDailyCount);
         LocalTime time = LocalTime.now();
         LocalTime past = time.minusSeconds(count);
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             try {
-                this.PersonCount.get(date).add("New Customer: "+past);
+                this.PersonCount.get(date).add("New Customer: " + past);
             } catch (Exception NullPointerException) {
-                this.PersonCount.put(date,new ArrayList <String>());
-                this.PersonCount.get(date).add("New Customer: "+past);
+                this.PersonCount.put(date, new ArrayList<String>());
+                this.PersonCount.get(date).add("New Customer: " + past);
             }
             past.plusSeconds(1);
             past.plusNanos(random.nextInt(50));
@@ -66,8 +64,8 @@ public class User implements Serializable{
     }
 
     void viewcount() {
-        for(Map.Entry<String,Integer> entry : DailyCount.entrySet()) {
-            System.out.println(entry.getKey()+" "+entry.getValue());
+        for (Map.Entry<String, Integer> entry : DailyCount.entrySet()) {
+            System.out.println(entry.getKey() + " " + entry.getValue());
         }
     }
 }

@@ -26,6 +26,7 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firestore.v1.Document;
@@ -138,8 +139,7 @@ public class UserDatabase implements java.io.Serializable {
                                 runloggedin = true;
                                 runlogin = false;
                                 databaseAdmin(u);
-                            }
-                            else{
+                            } else {
                                 runloggedin = true;
                                 runlogin = false;
                                 databaseRestaurant(u);
@@ -244,19 +244,29 @@ public class UserDatabase implements java.io.Serializable {
                     break;
                 case 5:
                     System.out.println("Enter restaurant Username");
-                    String un = sc.nextLine();
-                    Iterator<User> iterator2 = users.iterator();
-                    while (iterator2.hasNext()) {
-                        User u = iterator2.next();
-                        if (u.username.contentEquals(un)) {
-                            System.out.println("Enter date in DD/MM/YYYY");
+                    String userinput = sc.nextLine();
+                    CollectionReference users = db.collection("Users");
+                    Query query = users.whereEqualTo("username", userinput);
+                    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+                    try {
+                        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                            System.out.println("Enter date in YYYY-MM-DD");
                             String date = sc.nextLine();
                             System.out.println("Enter Count");
                             int count = sc.nextInt();
-                            sc.nextLine();
+                            String username = data.get("username").toString();
+                            Boolean admin = (boolean) data.get("admin");
+                            Map DailyCount = (Map) data.get("DailyCount");
+                            Map PersonCount = (Map) data.get("PersonCount");
+                            User u = new User(username, admin, DailyCount, PersonCount);
                             u.addcount(date, count);
-                            ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u,SetOptions.merge());
-                        }
+                            ApiFuture<WriteResult> result = db.collection("Users").document(document.getId()).set(SetOptions.merge());
+                        }  
+                    }   
+                    catch (InterruptedException | ExecutionException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        System.out.println("User not found");
                     }
                     break;
                 case 6:
@@ -265,8 +275,8 @@ public class UserDatabase implements java.io.Serializable {
                     break;
 
             }
-        }
-    }
+
+    }}
 
     public void userdatabase() throws ClassNotFoundException, IOException {
         // readdatabase();
