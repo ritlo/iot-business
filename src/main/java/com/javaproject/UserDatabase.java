@@ -42,7 +42,8 @@ public class UserDatabase implements java.io.Serializable {
     Console co = System.console();
     Scanner sc = new Scanner(System.in);
     SecureRandom random = new SecureRandom();
-    Map<String,Object> data = new HashMap<String,Object>();
+    Map<String, Object> data = new HashMap<String, Object>();
+    public String id = "";
 
     void register() {
         System.out.println("Enter Username: ");
@@ -51,9 +52,9 @@ public class UserDatabase implements java.io.Serializable {
         String password = String.valueOf(co.readPassword());
         System.out.println("Is User an Admin? (true/false)");
         boolean admin = sc.nextBoolean();
-        
+
         Hash hash = Password.hash(password).addRandomSalt(5).withScrypt();
-        User u = new User(user,hash.toString(),admin);
+        User u = new User(user, hash.toString(), admin);
         ApiFuture<WriteResult> result = db.collection("Users").document().set(u);
         try {
             System.out.println("New User registered " + result.get().getUpdateTime());
@@ -88,17 +89,15 @@ public class UserDatabase implements java.io.Serializable {
         List<QueryDocumentSnapshot> documents;
         try {
             documents = future.get().getDocuments();
-            for(DocumentSnapshot document:documents){
+            for (DocumentSnapshot document : documents) {
                 System.out.println(document.get("username"));
             }
         } catch (InterruptedException | ExecutionException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
     }
-
-
 
     void loginscreen() {
         System.out.println("Press Q to quit");
@@ -113,62 +112,64 @@ public class UserDatabase implements java.io.Serializable {
                 runlogin = false;
                 runloggedin = false;
                 break;
-            } else if(query == null) {
+            } else if (query == null) {
                 System.out.println("Try again");
-            }
-            else{
+            } else {
                 try {
                     for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
                         System.out.println("Enter Password");
                         String loginPassword = String.valueOf(co.readPassword());
-                        String id = document.getId();
+                        id = document.getId();
                         System.out.println(data);
                         String hash = document.getData().get("hash").toString();
                         boolean verify = Password.check(loginPassword, hash).withScrypt();
-                        if(verify){
+                        if (verify) {
                             data = document.getData();
+                            id = document.getId();
                             System.out.println("User verified");
-                            System.out.println("Welcome "+data.get("username").toString());
+                            System.out.println("Welcome " + data.get("username").toString());
                             String username = data.get("username").toString();
                             Boolean admin = (boolean) data.get("admin");
                             Map DailyCount = (Map) data.get("DailyCount");
                             Map PersonCount = (Map) data.get("PersonCount");
                             User u = new User(username, admin, DailyCount, PersonCount);
-                            if((boolean)data.get("admin")==true){
+                            if ((boolean) data.get("admin") == true) {
                                 // databaseAdmin(DocumentSnapshot document);
-                                System.out.println("User verified");
                                 runloggedin = true;
                                 runlogin = false;
                                 databaseAdmin(u);
-                                break;
+                            }
+                            else{
+                                runloggedin = true;
+                                runlogin = false;
+                                databaseRestaurant(u);
                             }
                         }
-                        
 
-}
+                    }
                 } catch (InterruptedException | ExecutionException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 // while (iterator.hasNext()) {
-                //     User currentUser = iterator.next();
-                //     if (currentUser.username.contentEquals(loginUser)
-                //             && currentUser.password.contentEquals(loginPassword)
-                //             && currentUser.authorizationLevel == 1) {
-                //         System.out.println("Hello " + currentUser.username);
-                //         runloggedin = true;
-                //         runlogin = false;
-                //         databaseRestaurant(currentUser);
-                //         break;
-                //     } else if (currentUser.username.contentEquals(loginUser)
-                //             && currentUser.password.contentEquals(loginPassword)
-                //             && currentUser.authorizationLevel > 1) {
-                //         System.out.println("Hello, " + currentUser.username);
-                //         runloggedin = true;
-                //         runlogin = false;
-                //         databaseAdmin(currentUser);
-                //         break;
-                //     }
+                // User currentUser = iterator.next();
+                // if (currentUser.username.contentEquals(loginUser)
+                // && currentUser.password.contentEquals(loginPassword)
+                // && currentUser.authorizationLevel == 1) {
+                // System.out.println("Hello " + currentUser.username);
+                // runloggedin = true;
+                // runlogin = false;
+                // databaseRestaurant(currentUser);
+                // break;
+                // } else if (currentUser.username.contentEquals(loginUser)
+                // && currentUser.password.contentEquals(loginPassword)
+                // && currentUser.authorizationLevel > 1) {
+                // System.out.println("Hello, " + currentUser.username);
+                // runloggedin = true;
+                // runlogin = false;
+                // databaseAdmin(currentUser);
+                // break;
+                // }
                 // }
                 if (runlogin)
                     System.out.println("Try Again");
@@ -177,7 +178,7 @@ public class UserDatabase implements java.io.Serializable {
     }
 
     void databaseRestaurant(User U) {
-        IoTEmbeddedSystem pc = new IoTEmbeddedSystem(U);
+        IoTEmbeddedSystem pc = new IoTEmbeddedSystem(U, id);
         pc.start();
         while (runloggedin) {
             System.out.println("Enter option");
@@ -198,8 +199,6 @@ public class UserDatabase implements java.io.Serializable {
                     System.out.println("Enter Person Count");
                     int count = sc.nextInt();
                     sc.nextLine();
-                    U.addcount(date, count);
-                    break;
                 case 3:
                     runloggedin = false;
                     runlogin = false;
@@ -284,7 +283,6 @@ public class UserDatabase implements java.io.Serializable {
         // register();
         loginscreen();
         // writedatabase();
-
 
     }
 }

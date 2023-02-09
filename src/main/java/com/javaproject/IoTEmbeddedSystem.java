@@ -4,9 +4,13 @@ import com.pi4j.io.gpio.digital.*;
 
 import org.threeten.bp.LocalTime;
 
+import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
@@ -18,15 +22,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class IoTEmbeddedSystem extends Thread {
     static int MOTION_SENSOR_PIN = 15;
     static int FIRE_SENSOR_PIN = 18;
-    int currentPersonCount;
+    int currentDailyCount;
     User u;
+    String id;
+    Firestore db = FirestoreClient.getFirestore();
 
-    IoTEmbeddedSystem(User u) {
+    IoTEmbeddedSystem(User u, String id) {
         this.u = u;
+        this.id = id;
     }
 
     DateTimeFormatter currentDateFormatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
@@ -119,9 +127,9 @@ public class IoTEmbeddedSystem extends Thread {
         var motioninput = digitalInputProvider.create(motionConfig);
         var fireinput = digitalInputProvider.create(fireConfig);
         try {
-            currentPersonCount = u.PersonCount.get(date);
+            currentDailyCount = u.DailyCount.get(date);
         } catch (NullPointerException e2) {
-            u.PersonCount.put(date, 0);
+            u.DailyCount.put(date, 0);
         }
 
         System.out.println("Running");
@@ -132,9 +140,9 @@ public class IoTEmbeddedSystem extends Thread {
                 // Night test
                 // if (!(LocalTime.now().isAfter(openingTime) &&
                 // LocalTime.now().isBefore(closingTime))) {
-                // currentPersonCount++;
-                // u.PersonCount.put(date, currentPersonCount);
-                // System.out.println("Person detected " + currentPersonCount + "th time");
+                // currentDailyCount++;
+                // u.PersonCount.put(date, currentDailyCount);
+                // System.out.println("Person detected " + currentDailyCount + "th time");
 
                 // } else {
                 // try {
@@ -145,11 +153,20 @@ public class IoTEmbeddedSystem extends Thread {
                 // }
                 // }
                 if (LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime)) {
-                    currentPersonCount++;
-                    u.PersonCount.put(date, currentPersonCount);
-                    System.out.println("Person detected " + currentPersonCount + "th time");
+                    currentDailyCount++;
+                    String time = LocalTime.now().toString();
+                    u.DailyCount.put(date, currentDailyCount);
                     try {
-                        updateApp(Integer.toString(currentPersonCount));
+                        u.PersonCount.get(date).add("New Customer: "+time);
+                    } catch (Exception NullPointerException) {
+                        u.PersonCount.put(date,new ArrayList <String>());
+                        u.PersonCount.get(date).add("New Customer: "+time);
+                    }
+                    
+                    ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u);
+                    System.out.println("Person detected " + currentDailyCount + "th time");
+                    try {
+                        updateApp(Integer.toString(currentDailyCount));
                     } catch (FirebaseMessagingException e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
@@ -173,9 +190,9 @@ public class IoTEmbeddedSystem extends Thread {
                 // Night test
                 // if (!(LocalTime.now().isAfter(openingTime) &&
                 // LocalTime.now().isBefore(closingTime))) {
-                // currentPersonCount++;
-                // u.PersonCount.put(date, currentPersonCount);
-                // System.out.println("Person detected " + currentPersonCount + "th time");
+                // currentDailyCount++;
+                // u.PersonCount.put(date, currentDailyCount);
+                // System.out.println("Person detected " + currentDailyCount + "th time");
 
                 // } else {
                 // try {
