@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
@@ -29,6 +30,7 @@ import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firestore.v1.Document;
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.password4j.Hash;
 import com.password4j.Password;
 
@@ -50,13 +52,8 @@ public class UserDatabase implements java.io.Serializable {
         System.out.println("Is User an Admin? (true/false)");
         boolean admin = sc.nextBoolean();
         
-        Hash hash = Password.hash(password).addRandomSalt().withScrypt();
+        Hash hash = Password.hash(password).addRandomSalt(5).withScrypt();
         User u = new User(user,hash.toString(),admin);
-        DocumentReference docRef = db.collection("Users").document();
-        Map<String, Object> data = new HashMap<>();
-        data.put("username", user);
-        data.put("hashedpassword", hash.toString());
-        data.put("admin", admin);
         ApiFuture<WriteResult> result = db.collection("Users").document().set(u);
         try {
             System.out.println("New User registered " + result.get().getUpdateTime());
@@ -69,29 +66,36 @@ public class UserDatabase implements java.io.Serializable {
         }
     }
 
-    void delete(String username) {
-        boolean found = false;
-        for (User u : users) {
-            if (u.username.contentEquals(username)) {
-                users.remove(u);
-                found = true;
-                break;
+    void delete(String deluser) {
+        CollectionReference users = db.collection("Users");
+        Query query = users.whereEqualTo("username", deluser);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        try {
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                ApiFuture<WriteResult> writeResult = db.collection("Users").document(document.getId()).delete();
+                System.out.println("User Deleted");
             }
+        } catch (InterruptedException | ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("User not found");
         }
-        if (found)
-            System.out.println(username + " was removed");
-        else
-            System.out.println("user not found");
-
     }
 
     void view() {
-        System.out.println(users.size() + " Registered Users");
-        for (User u : users) {
-            System.out.print(u.username);
-            System.out.print(" " + u.admin);
-            System.out.println();
+        CollectionReference users = db.collection("Users");
+        ApiFuture<QuerySnapshot> future = db.collection("Users").get();
+        List<QueryDocumentSnapshot> documents;
+        try {
+            documents = future.get().getDocuments();
+            for(DocumentSnapshot document:documents){
+                System.out.println(document.get("username"));
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+        
     }
 
 
@@ -125,9 +129,18 @@ public class UserDatabase implements java.io.Serializable {
                             data = document.getData();
                             System.out.println("User verified");
                             System.out.println("Welcome "+data.get("username").toString());
+                            String username = data.get("username").toString();
+                            Boolean admin = (boolean) data.get("admin");
+                            Map DailyCount = (Map) data.get("DailyCount");
+                            Map PersonCount = (Map) data.get("PersonCount");
+                            User u = new User(username, admin, DailyCount, PersonCount);
                             if((boolean)data.get("admin")==true){
                                 // databaseAdmin(DocumentSnapshot document);
                                 System.out.println("User verified");
+                                runloggedin = true;
+                                runlogin = false;
+                                databaseAdmin(u);
+                                break;
                             }
                         }
                         
