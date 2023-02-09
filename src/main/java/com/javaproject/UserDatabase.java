@@ -49,14 +49,15 @@ public class UserDatabase implements java.io.Serializable {
         String password = String.valueOf(co.readPassword());
         System.out.println("Is User an Admin? (true/false)");
         boolean admin = sc.nextBoolean();
-  
+        
         Hash hash = Password.hash(password).addRandomSalt().withScrypt();
+        User u = new User(user,hash.toString(),admin);
         DocumentReference docRef = db.collection("Users").document();
         Map<String, Object> data = new HashMap<>();
         data.put("username", user);
         data.put("hashedpassword", hash.toString());
         data.put("admin", admin);
-        ApiFuture<WriteResult> result = db.collection("Users").document().set(data);
+        ApiFuture<WriteResult> result = db.collection("Users").document().set(u);
         try {
             System.out.println("New User registered " + result.get().getUpdateTime());
         } catch (ExecutionException e) {
@@ -88,7 +89,7 @@ public class UserDatabase implements java.io.Serializable {
         System.out.println(users.size() + " Registered Users");
         for (User u : users) {
             System.out.print(u.username);
-            System.out.print(" " + u.authorizationLevel);
+            System.out.print(" " + u.admin);
             System.out.println();
         }
     }
@@ -117,11 +118,11 @@ public class UserDatabase implements java.io.Serializable {
                         System.out.println("Enter Password");
                         String loginPassword = String.valueOf(co.readPassword());
                         String id = document.getId();
-                        data = document.getData();
                         System.out.println(data);
-                        String hash = data.get("hashedpassword").toString();
+                        String hash = document.getData().get("hash").toString();
                         boolean verify = Password.check(loginPassword, hash).withScrypt();
                         if(verify){
+                            data = document.getData();
                             System.out.println("User verified");
                             System.out.println("Welcome "+data.get("username").toString());
                             if((boolean)data.get("admin")==true){
@@ -223,7 +224,7 @@ public class UserDatabase implements java.io.Serializable {
                     Iterator<User> iterator = users.iterator();
                     while (iterator.hasNext()) {
                         User u = iterator.next();
-                        if (u.authorizationLevel == 1) {
+                        if (u.admin) {
                             System.out.println(u.username);
                             u.viewcount();
                         }
