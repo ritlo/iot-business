@@ -77,6 +77,13 @@ public class IoTEmbeddedSystem extends Thread {
                 .build();
 
         String response = FirebaseMessaging.getInstance().send(message);
+        try {
+            u.PersonCount.get(date).add("PERSON DETECTED: "+time);
+        } catch (Exception NullPointerException) {
+            u.PersonCount.put(date,new ArrayList <String>());
+            u.PersonCount.get(date).add("PERSON DETECTED: "+time);
+        }
+        ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u);
 
         System.out.println("Person Detected, Alert Sent");
     }
@@ -101,18 +108,24 @@ public class IoTEmbeddedSystem extends Thread {
                 .build();
 
         String response = FirebaseMessaging.getInstance().send(message);
-
+        try {
+            u.PersonCount.get(date).add("FIRE DETECTED: "+time);
+        } catch (Exception NullPointerException) {
+            u.PersonCount.put(date,new ArrayList <String>());
+            u.PersonCount.get(date).add("FIRE DETECTED: "+time);
+        }
+        ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u);
         System.out.println("Fire Alarm Sent");
 
     }
 
     public void run() {
-        try {
-            initialiseFirebase();
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        // try {
+        //     initialiseFirebase();
+        // } catch (IOException e1) {
+        //     // TODO Auto-generated catch block
+        //     e1.printStackTrace();
+        // }
 
         String date = currentDateFormatter.format(currentDate);
 
