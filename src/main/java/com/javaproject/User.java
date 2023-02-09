@@ -24,7 +24,7 @@ public class User implements Serializable {
         this.username = username;
         this.hash = hash;
         this.admin = admin;
-        DateTimeFormatter currentDateFormatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
+        DateTimeFormatter currentDateFormatter = DateTimeFormatter.ofPattern("YYYY-MM-DD");
         LocalDate currentDate = LocalDate.now();
         this.DailyCount.put(currentDate.toString(), 0);
         this.PersonCount.put(currentDate.toString(), null);
@@ -48,17 +48,17 @@ public class User implements Serializable {
 
         Random random = new Random();
         this.DailyCount.put(date, count + existingDailyCount);
-        LocalTime time = LocalTime.now();
-        LocalTime past = time.minusSeconds(count);
+        LocalTime time = LocalTime.now(); 
+        LocalTime past = time.minusMinutes(count*random.nextInt(15));
         for (int i = 0; i < count; i++) {
             try {
-                this.PersonCount.get(date).add("New Customer: " + past);
+                this.PersonCount.get(date).add("New Customer: " + past.toString());
             } catch (Exception NullPointerException) {
                 this.PersonCount.put(date, new ArrayList<String>());
-                this.PersonCount.get(date).add("New Customer: " + past);
+                this.PersonCount.get(date).add("New Customer: " + past.toString());
             }
-            past.plusSeconds(1);
-            past.plusNanos(random.nextInt(50));
+            past = past.plusSeconds(1*random.nextInt(300));
+            past = past.plusNanos(random.nextInt(900000));
         }
 
     }

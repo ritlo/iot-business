@@ -250,6 +250,7 @@ public class UserDatabase implements java.io.Serializable {
                     ApiFuture<QuerySnapshot> querySnapshot = query.get();
                     try {
                         for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                            data = document.getData();
                             System.out.println("Enter date in YYYY-MM-DD");
                             String date = sc.nextLine();
                             System.out.println("Enter Count");
@@ -258,9 +259,10 @@ public class UserDatabase implements java.io.Serializable {
                             Boolean admin = (boolean) data.get("admin");
                             Map DailyCount = (Map) data.get("DailyCount");
                             Map PersonCount = (Map) data.get("PersonCount");
-                            User u = new User(username, admin, DailyCount, PersonCount);
-                            u.addcount(date, count);
-                            ApiFuture<WriteResult> result = db.collection("Users").document(document.getId()).set(SetOptions.merge());
+                            User ud = new User(username, admin, DailyCount, PersonCount);
+                            ud.addcount(date, count);
+                            ApiFuture<WriteResult> result = db.collection("Users").document(document.getId()).set(ud,SetOptions.merge());
+                            System.out.println("Count Added");
                         }  
                     }   
                     catch (InterruptedException | ExecutionException e) {
