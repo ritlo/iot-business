@@ -7,6 +7,7 @@ import org.threeten.bp.LocalTime;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -83,7 +84,7 @@ public class IoTEmbeddedSystem extends Thread {
             u.PersonCount.put(date,new ArrayList <String>());
             u.PersonCount.get(date).add("PERSON DETECTED: "+time);
         }
-        ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u);
+        ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u,SetOptions.merge());
 
         System.out.println("Person Detected, Alert Sent");
     }
@@ -114,7 +115,7 @@ public class IoTEmbeddedSystem extends Thread {
             u.PersonCount.put(date,new ArrayList <String>());
             u.PersonCount.get(date).add("FIRE DETECTED: "+time);
         }
-        ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u);
+        ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u,SetOptions.merge());
         System.out.println("Fire Alarm Sent");
 
     }
@@ -176,7 +177,7 @@ public class IoTEmbeddedSystem extends Thread {
                         u.PersonCount.get(date).add("New Customer: "+time);
                     }
                     
-                    ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u);
+                    ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u,SetOptions.merge());
                     System.out.println("Person detected " + currentDailyCount + "th time");
                     try {
                         updateApp(Integer.toString(currentDailyCount));
