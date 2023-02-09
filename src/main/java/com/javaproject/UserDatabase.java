@@ -255,6 +255,7 @@ public class UserDatabase implements java.io.Serializable {
                             int count = sc.nextInt();
                             sc.nextLine();
                             u.addcount(date, count);
+                            ApiFuture<WriteResult> result = db.collection("Users").document(id).set(u,SetOptions.merge());
                         }
                     }
                     break;
