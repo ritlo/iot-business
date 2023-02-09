@@ -2,6 +2,7 @@ package com.javaproject;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import com.password4j.Hash;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 
 
@@ -39,7 +41,28 @@ public class User implements Serializable{
     }
 
     void addcount(String date, int count) {
-        this.DailyCount.put(date, count);
+        int existingDailyCount;
+        try {
+          existingDailyCount     = this.DailyCount.get(date);
+        } catch (Exception e) {
+            existingDailyCount = 0;
+        }
+        
+        Random random = new Random();
+        this.DailyCount.put(date, count+existingDailyCount);
+        LocalTime time = LocalTime.now();
+        LocalTime past = time.minusSeconds(count);
+        for(int i = 0; i < count; i++){
+            try {
+                this.PersonCount.get(date).add("New Customer: "+past);
+            } catch (Exception NullPointerException) {
+                this.PersonCount.put(date,new ArrayList <String>());
+                this.PersonCount.get(date).add("New Customer: "+past);
+            }
+            past.plusSeconds(1);
+            past.plusNanos(random.nextInt(50));
+        }
+
     }
 
     void viewcount() {
