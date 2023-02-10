@@ -1,89 +1,103 @@
 package com.javaproject;
 
+import java.io.Console;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.SetOptions;
+import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.cloud.FirestoreClient;
+import com.google.firestore.v1.Document;
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.password4j.Hash;
+import com.password4j.Password;
 
 public class UserDatabase implements java.io.Serializable {
-    Scanner sc = new Scanner(System.in);
     ArrayList<User> users = new ArrayList<User>();
     Boolean runlogin = true;
     Boolean runloggedin = false;
+    Firestore db = FirestoreClient.getFirestore();
+    Console co = System.console();
+    Scanner sc = new Scanner(System.in);
+    SecureRandom random = new SecureRandom();
+    Map<String, Object> data = new HashMap<String, Object>();
+    public String id = "";
 
     void register() {
         System.out.println("Enter Username: ");
-        String user = sc.nextLine();
+        String user = co.readLine();
         System.out.println("Enter Password: ");
-        String password = sc.nextLine();
-        System.out.println("Authorization Level");
-        int authorizationLevel = sc.nextInt();
+        String password = String.valueOf(co.readPassword());
+        System.out.println("Is User an Admin? (true/false)");
+        boolean admin = sc.nextBoolean();
 
-        User u = new User(user, password, authorizationLevel);
-        users.add(u);
-
+        Hash hash = Password.hash(password).addRandomSalt(5).withScrypt();
+        User u = new User(user, hash.toString(), admin);
+        ApiFuture<WriteResult> result = db.collection("Users").document().set(u);
+        try {
+            System.out.println("New User registered " + result.get().getUpdateTime());
+        } catch (ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    void delete(String username) {
-        boolean found = false;
-        for (User u : users) {
-            if (u.username.contentEquals(username)) {
-                users.remove(u);
-                found = true;
-                break;
+    void delete(String deluser) {
+        CollectionReference users = db.collection("Users");
+        Query query = users.whereEqualTo("username", deluser);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        try {
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                ApiFuture<WriteResult> writeResult = db.collection("Users").document(document.getId()).delete();
+                System.out.println("User Deleted");
             }
+        } catch (InterruptedException | ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("User not found");
         }
-        if (found)
-            System.out.println(username + " was removed");
-        else
-            System.out.println("user not found");
-
     }
 
     void view() {
-        System.out.println(users.size() + " Registered Users");
-        for (User u : users) {
-            System.out.print(u.username);
-            System.out.print(" " + u.authorizationLevel);
-            System.out.println();
-        }
-    }
-
-    void writedatabase() {
+        CollectionReference users = db.collection("Users");
+        ApiFuture<QuerySnapshot> future = db.collection("Users").get();
+        List<QueryDocumentSnapshot> documents;
         try {
-            FileOutputStream out = new FileOutputStream("userdatabase.ser");
-            ObjectOutputStream userswrite = new ObjectOutputStream(out);
-
-            userswrite.writeObject(users);
-            out.close();
-            userswrite.close();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
+            documents = future.get().getDocuments();
+            for (DocumentSnapshot document : documents) {
+                System.out.println(document.get("username"));
+            }
+        } catch (InterruptedException | ExecutionException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
 
-    void readdatabase() throws ClassNotFoundException, IOException {
-        try {
-            FileInputStream in = new FileInputStream("userdatabase.ser");
-            ObjectInputStream usersread = new ObjectInputStream(in);
-
-        users = (ArrayList<User>) usersread.readObject();
-        in.close();
-        usersread.close();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            System.out.println("File doesnt exist");
-        }
-        
     }
 
     void loginscreen() {
@@ -91,42 +105,80 @@ public class UserDatabase implements java.io.Serializable {
         int wrongcount = 0;
         while (runlogin) {
             System.out.println("Enter Username");
-            String loginUser = sc.nextLine();
-            System.out.println("Enter Password");
-            String loginPassword = sc.nextLine();
-            Iterator<User> iterator = users.iterator();
-            if (loginUser.toLowerCase().contentEquals("q") || loginPassword.toLowerCase().contentEquals("q")) {
+            String loginUser = co.readLine();
+            CollectionReference users = db.collection("Users");
+            Query query = users.whereEqualTo("username", loginUser);
+            ApiFuture<QuerySnapshot> querySnapshot = query.get();
+            if (loginUser.toLowerCase().contentEquals("q")) {
                 runlogin = false;
                 runloggedin = false;
                 break;
+            } else if (query == null) {
+                System.out.println("Try again");
             } else {
-                while (iterator.hasNext()) {
-                    User currentUser = iterator.next();
-                    if (currentUser.username.contentEquals(loginUser)
-                            && currentUser.password.contentEquals(loginPassword)
-                            && currentUser.authorizationLevel == 1) {
-                        System.out.println("Hello " + currentUser.username);
-                        runloggedin = true;
-                        runlogin = false;
-                        databaseRestaurant(currentUser);
-                        break;
-                    } else if (currentUser.username.contentEquals(loginUser)
-                            && currentUser.password.contentEquals(loginPassword)
-                            && currentUser.authorizationLevel > 1) {
-                        System.out.println("Hello, " + currentUser.username);
-                        runloggedin = true;
-                        runlogin = false;
-                        databaseAdmin(currentUser);
-                        break;
-                    } 
+                try {
+                    for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                        System.out.println("Enter Password");
+                        String loginPassword = String.valueOf(co.readPassword());
+                        id = document.getId();
+                        System.out.println(data);
+                        String hash = document.getData().get("hash").toString();
+                        boolean verify = Password.check(loginPassword, hash).withScrypt();
+                        if (verify) {
+                            data = document.getData();
+                            id = document.getId();
+                            System.out.println("User verified");
+                            System.out.println("Welcome " + data.get("username").toString());
+                            String username = data.get("username").toString();
+                            Boolean admin = (boolean) data.get("admin");
+                            Map DailyCount = (Map) data.get("DailyCount");
+                            Map PersonCount = (Map) data.get("PersonCount");
+                            User u = new User(username, admin, DailyCount, PersonCount);
+                            if ((boolean) data.get("admin") == true) {
+                                // databaseAdmin(DocumentSnapshot document);
+                                runloggedin = true;
+                                runlogin = false;
+                                databaseAdmin(u);
+                            } else {
+                                runloggedin = true;
+                                runlogin = false;
+                                databaseRestaurant(u);
+                            }
+                        }
+
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
-                if(runlogin) System.out.println("Try Again");
+                // while (iterator.hasNext()) {
+                // User currentUser = iterator.next();
+                // if (currentUser.username.contentEquals(loginUser)
+                // && currentUser.password.contentEquals(loginPassword)
+                // && currentUser.authorizationLevel == 1) {
+                // System.out.println("Hello " + currentUser.username);
+                // runloggedin = true;
+                // runlogin = false;
+                // databaseRestaurant(currentUser);
+                // break;
+                // } else if (currentUser.username.contentEquals(loginUser)
+                // && currentUser.password.contentEquals(loginPassword)
+                // && currentUser.authorizationLevel > 1) {
+                // System.out.println("Hello, " + currentUser.username);
+                // runloggedin = true;
+                // runlogin = false;
+                // databaseAdmin(currentUser);
+                // break;
+                // }
+                // }
+                if (runlogin)
+                    System.out.println("Try Again");
             }
         }
     }
 
     void databaseRestaurant(User U) {
-        IoTEmbeddedSystem pc = new IoTEmbeddedSystem(U);
+        IoTEmbeddedSystem pc = new IoTEmbeddedSystem(U, id);
         pc.start();
         while (runloggedin) {
             System.out.println("Enter option");
@@ -147,8 +199,6 @@ public class UserDatabase implements java.io.Serializable {
                     System.out.println("Enter Person Count");
                     int count = sc.nextInt();
                     sc.nextLine();
-                    U.addcount(date, count);
-                    break;
                 case 3:
                     runloggedin = false;
                     runlogin = false;
@@ -186,7 +236,7 @@ public class UserDatabase implements java.io.Serializable {
                     Iterator<User> iterator = users.iterator();
                     while (iterator.hasNext()) {
                         User u = iterator.next();
-                        if (u.authorizationLevel == 1) {
+                        if (u.admin) {
                             System.out.println(u.username);
                             u.viewcount();
                         }
@@ -194,18 +244,31 @@ public class UserDatabase implements java.io.Serializable {
                     break;
                 case 5:
                     System.out.println("Enter restaurant Username");
-                    String un = sc.nextLine();
-                    Iterator<User> iterator2 = users.iterator();
-                    while (iterator2.hasNext()) {
-                        User u = iterator2.next();
-                        if (u.username.contentEquals(un)) {
-                            System.out.println("Enter date in DD/MM/YYYY");
+                    String userinput = sc.nextLine();
+                    CollectionReference users = db.collection("Users");
+                    Query query = users.whereEqualTo("username", userinput);
+                    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+                    try {
+                        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                            data = document.getData();
+                            System.out.println("Enter date in YYYY-MM-DD");
                             String date = sc.nextLine();
                             System.out.println("Enter Count");
                             int count = sc.nextInt();
-                            sc.nextLine();
-                            u.addcount(date, count);
-                        }
+                            String username = data.get("username").toString();
+                            Boolean admin = (boolean) data.get("admin");
+                            Map DailyCount = (Map) data.get("DailyCount");
+                            Map PersonCount = (Map) data.get("PersonCount");
+                            User ud = new User(username, admin, DailyCount, PersonCount);
+                            ud.addcount(date, count);
+                            ApiFuture<WriteResult> result = db.collection("Users").document(document.getId()).set(ud,SetOptions.merge());
+                            System.out.println("Count Added");
+                        }  
+                    }   
+                    catch (InterruptedException | ExecutionException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        System.out.println("User not found");
                     }
                     break;
                 case 6:
@@ -214,24 +277,25 @@ public class UserDatabase implements java.io.Serializable {
                     break;
 
             }
-        }
-    }
+
+    }}
 
     public void userdatabase() throws ClassNotFoundException, IOException {
-        readdatabase();
-        User admin = new User("admin", "password", 2);
-        boolean adminExists = false;
-        Iterator <User> it = users.iterator();
-        while(it.hasNext()){
-            User u = it.next();
-            if(u.username.contentEquals("admin")) adminExists = true;
-        }
-        if(!adminExists){
-            System.out.println("Adding Admin User to Database");
-            users.add(admin);
-        }
+        // readdatabase();
+        // User admin = new User("admin", "password", 2);
+        // boolean adminExists = false;
+        // Iterator <User> it = users.iterator();
+        // while(it.hasNext()){
+        // User u = it.next();
+        // if(u.username.contentEquals("admin")) adminExists = true;
+        // }
+        // if(!adminExists){
+        // System.out.println("Adding Admin User to Database");
+        // users.add(admin);
+        // }
+        // register();
         loginscreen();
-        writedatabase();
+        // writedatabase();
 
     }
 }
