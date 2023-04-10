@@ -260,7 +260,8 @@ public class UserDatabase implements java.io.Serializable {
                             Boolean admin = (boolean) data.get("admin");
                             Map DailyCount = (Map) data.get("DailyCount");
                             Map PersonCount = (Map) data.get("PersonCount");
-                            User ud = new User(username, admin, DailyCount, PersonCount);
+                            User ud = null;
+                            ud = document.toObject(User.class);
                             ud.addcount(date, count);
                             ApiFuture<WriteResult> result = db.collection("Users").document(document.getId()).set(ud,SetOptions.merge());
                             System.out.println("Count Added");
