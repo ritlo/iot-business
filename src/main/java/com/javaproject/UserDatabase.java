@@ -114,7 +114,7 @@ public class UserDatabase implements java.io.Serializable {
                 runloggedin = false;
                 break;
             } else if (query == null) {
-                System.out.println("Try again");
+                System.out.println("Try again"); 
             } else {
                 try {
                     for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
@@ -133,7 +133,8 @@ public class UserDatabase implements java.io.Serializable {
                             Boolean admin = (boolean) data.get("admin");
                             Map DailyCount = (Map) data.get("DailyCount");
                             Map PersonCount = (Map) data.get("PersonCount");
-                            User u = new User(username, admin, DailyCount, PersonCount);
+                            User u = null;
+                            u = document.toObject(User.class);
                             if ((boolean) data.get("admin") == true) {
                                 // databaseAdmin(DocumentSnapshot document);
                                 runloggedin = true;
